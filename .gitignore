@@ -1,0 +1,115 @@
+# ==============================================================================
+# 🛡️ SECURANÇA MÁXIMA - GITIGNORE - SISTEMA DE LOCALIZAÇÃO (RATONET TRACKER)
+# ==============================================================================
+# Este ficheiro está configurado de forma estrita para prevenir a fuga acidental
+# de dados de localização, chaves de API, credenciais Firebase e ambientes locais.
+
+# ------------------------------------------------------------------------------
+# 1. CHAVES DE API, CREDENCIAIS E SEGREDOS (CRÍTICO)
+# ------------------------------------------------------------------------------
+# Nunca comitar variáveis de ambiente reais
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+
+# Certificados SSL / TLS
+*.pem
+*.key
+*.cert
+*.crt
+
+# Chaves de Serviço do Firebase (Se usadas no backend - NUNCA COMITAR)
+*serviceAccountKey*.json
+*firebase-adminsdk*.json
+credentials.json
+client_secret.json
+
+# ------------------------------------------------------------------------------
+# 2. BASES DE DADOS LOCAIS E DADOS DE LOCALIZAÇÃO EM CACHE
+# ------------------------------------------------------------------------------
+# Ficheiros de Base de Dados Locais
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+*.db-shm
+*.db-wal
+
+# Dumps e Backups que possam conter coordenadas de utilizadores
+*.sql
+*.dump
+*.bak
+/data/
+/db/
+/dumps/
+/backups/
+/export/
+
+# ------------------------------------------------------------------------------
+# 3. FIREBASE: AMBIENTE LOCAL E LOGS DE DEBUG
+# ------------------------------------------------------------------------------
+.firebase/
+firebase-export-*
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+
+# O ficheiro .firebaserc contém os IDs do teu projeto (se quiseres ocultar o nome real do projeto, descomenta a linha abaixo)
+# .firebaserc
+
+# ------------------------------------------------------------------------------
+# 4. DEPENDÊNCIAS (Node.js, se vier a ser usado)
+# ------------------------------------------------------------------------------
+node_modules/
+.npm/
+
+# ------------------------------------------------------------------------------
+# 5. LOGS E FICHEIROS DE DEBUGGING
+# ------------------------------------------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+debug.log
+
+# ------------------------------------------------------------------------------
+# 6. FICHEIROS DE SISTEMA E OS (Ex: Trackers ocultos do Windows/Mac)
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------------------------
+# 7. IDEs E EDITORES DE CÓDIGO (Visual Studio Code, JetBrains, etc.)
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# 8. OUTROS DIRETÓRIOS TEMPORÁRIOS
+# ------------------------------------------------------------------------------
+tmp/
+temp/
+.temp/
+.cache/
+coverage/
+.nyc_output/
