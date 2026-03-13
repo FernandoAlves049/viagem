@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, StatusBar, Image } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+
+// --- FIREBASE IMPORTS ---
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, onValue } from "firebase/database";
+import { getAuth, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const firebaseConfig = {
   apiKey: "AIzaSyChd-obj84ex3ICIR9-gXYaD73G4i2kClY",
@@ -13,155 +17,159 @@ const firebaseConfig = {
   storageBucket: "ratonet-tracker.firebasestorage.app",
   appId: "1:675538092831:web:4af8d3e86ddb1b392ea62a"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+
+GoogleSignin.configure({
+  webClientId: '675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com',
+});
 
 export default function App() {
-  const mapRef = useRef(null);
-  const [rota, setRota] = useState([]);
-  const [currentData, setCurrentData] = useState(null);
-  
-  const [modoDesenho, setModoDesenho] = useState(false);
-  const [rotaPlanejada, setRotaPlanejada] = useState([]);
-  const [codigoSala, setCodigoSala] = useState('');
+  const [user, setUser] = useState(null);
+  const [salaAtiva, setSalaAtiva] = useState(null);
+  const [comboio, setComboio] = useState({});
 
-  useEffect(() => {
-    if (!codigoSala) {
-      setRota([]);
-      setCurrentData(null);
-      return;
+  // --- 1. LOGIN ADMIN ---
+  const signInGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo?.data?.idToken || userInfo?.idToken;
+      
+      if (!idToken) return Alert.alert("Erro", "Falha ao obter Token do Google.");
+
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      const userCred = await signInWithCredential(auth, googleCredential);
+      
+      setUser(userCred.user);
+      set(ref(db, `usuarios/${userCred.user.uid}`), {
+        nome: userCred.user.displayName,
+        role: 'admin'
+      });
+    } catch (error) {
+      Alert.alert("Erro", "Falha no login do Admin.");
     }
-    const rotaRef = ref(db, `telemetria/${codigoSala}/carro1`);
-    return onValue(rotaRef, (snapshot) => {
+  };
+
+  // --- 2. CRIAR SALA ---
+  const criarSala = () => {
+    const novoCodigo = Math.random().toString(36).substring(2, 7).toUpperCase();
+    set(ref(db, `salas/${novoCodigo}`), { criador: user.displayName, data: Date.now() });
+    setSalaAtiva(novoCodigo);
+    Alert.alert("🟢 SALA CRIADA!", `Código: ${novoCodigo}\n\nEnvie este código aos viajantes.`);
+  };
+
+  // --- 3. OUVIR A TELEMETRIA DA SALA ---
+  useEffect(() => {
+    if (!salaAtiva) return;
+    
+    const telemetriaRef = ref(db, `telemetria/${salaAtiva}`);
+    const unsubscribe = onValue(telemetriaRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const path = Object.values(data);
-        setRota(path);
-        setCurrentData(path[path.length - 1]);
+        setComboio(data);
       } else {
-        setRota([]);
-        setCurrentData(null);
+        setComboio({});
       }
     });
-  }, [codigoSala]);
-
-  const criarSala = () => {
-    const novoCodigo = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setCodigoSala(novoCodigo);
-    setRotaPlanejada([]);
-    setRota([]);
-    setCurrentData(null);
-    set(ref(db, `salas/${novoCodigo}`), { criador: 'Admin', ativa: true });
-    Alert.alert("Sala Criada!", `Código da Sala: ${novoCodigo}\nPasse isso para o Creta.`);
-  };
-
-  const handleMapPress = (e) => {
-    if (!modoDesenho) return;
-    const novaCoordenada = e.nativeEvent.coordinate;
-    const novaRota = [...rotaPlanejada, novaCoordenada];
-    setRotaPlanejada(novaRota);
     
-    // Salva a rota no Firebase na sala atual
-    if (codigoSala) {
-      set(ref(db, `salas/${codigoSala}/rotaPlanejada`), novaRota);
-    }
-  };
+    return () => unsubscribe();
+  }, [salaAtiva]);
 
-  const centerOnCar = () => {
-    if (currentData && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: currentData.latitude,
-        longitude: currentData.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 1000);
-    }
-  };
+  // --- TELAS ---
+  if (!user) {
+    return (
+      <View style={styles.loginContainer}>
+        <StatusBar barStyle="light-content" />
+        <Text style={styles.title}>CENTRO DE<Text style={{color: '#fff'}}> COMANDO</Text></Text>
+        <Text style={styles.subtitle}>Gestão de Frota</Text>
+        <TouchableOpacity style={styles.googleBtn} onPress={signInGoogle}>
+          <Ionicons name="logo-google" size={24} color="#fff" />
+          <Text style={styles.googleText}> Login Admin</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
       
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={{ latitude: -17.745, longitude: -49.101, latitudeDelta: 0.1, longitudeDelta: 0.1 }}
-        onPress={handleMapPress}
+      <MapView 
+        style={styles.map} 
+        // Coordenadas iniciais focadas em Morrinhos - GO
+        initialRegion={{ latitude: -17.7314, longitude: -49.1009, latitudeDelta: 0.1, longitudeDelta: 0.1 }}
       >
-        {rotaPlanejada.length > 0 && (
-          <Polyline coordinates={rotaPlanejada} strokeColor="#e67e22" strokeWidth={4} lineDashPattern={[10, 10]} />
-        )}
-        {rota.length > 0 && <Polyline coordinates={rota} strokeColor="#00ffcc" strokeWidth={6} />}
-        
-        {currentData && (
-          <Marker coordinate={currentData} anchor={{x: 0.5, y: 0.5}}>
-            <View style={styles.markerRing}>
-              <View style={styles.markerCore} />
-            </View>
-          </Marker>
-        )}
+        {/* RENDERIZA OS MARCADORES DE CADA CARRO */}
+        {Object.keys(comboio).map((uid) => {
+          const carro = comboio[uid];
+          
+          // PROTEÇÃO: Só mostra no mapa se o carro tiver enviado a latitude e longitude
+          if (!carro.latitude || !carro.longitude) return null;
+
+          return (
+            <Marker 
+              key={uid} 
+              coordinate={{ latitude: carro.latitude, longitude: carro.longitude }}
+              title={carro.nome}
+              description={`${Math.round(carro.speed || 0)} km/h`}
+              zIndex={100}
+            >
+              <View style={styles.carMarker}>
+                <Image source={{ uri: carro.foto }} style={styles.driverPic} />
+                <View style={styles.tag}>
+                  <Text style={styles.tagText}>{carro.nome} - {Math.round(carro.speed || 0)} km/h</Text>
+                </View>
+              </View>
+            </Marker>
+          );
+        })}
       </MapView>
 
-      <View style={styles.topPanel}>
-        <TouchableOpacity style={styles.btnTop} onPress={criarSala}>
-          <Text style={styles.btnTopText}>1. CRIAR NOVA SALA</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.btnTop, { backgroundColor: modoDesenho ? '#e74c3c' : '#3498db', marginTop: 10 }]} 
-          onPress={() => {
-            if (!codigoSala) {
-              Alert.alert("Atenção", "Crie uma sala primeiro!");
-              return;
-            }
-            setModoDesenho(!modoDesenho);
-          }}
-        >
-          <Text style={styles.btnTopText}>{modoDesenho ? "2. PARAR DE DESENHAR" : "2. DESENHAR ROTA Laranja"}</Text>
-        </TouchableOpacity>
-        {codigoSala ? (
-           <Text style={styles.roomCodeText}>SALA ATIVA: {codigoSala}</Text>
-        ) : null}
-      </View>
-
       <View style={styles.glassPanel}>
-        <View style={styles.panelHeader}>
-          <Text style={styles.targetName}>ALVO {codigoSala ? `(SALA ${codigoSala})` : ''}</Text>
-          <View style={[styles.statusDot, { backgroundColor: currentData ? '#00ffcc' : '#e74c3c' }]} />
+        <View style={styles.adminHeader}>
+          <Image source={{uri: user.photoURL}} style={styles.avatar} />
+          <Text style={styles.adminName}>Cmdt. {user.displayName.split(' ')[0]}</Text>
         </View>
 
-        <View style={styles.dataRow}>
-          <View>
-            <Text style={styles.label}>VELOCIDADE</Text>
-            <Text style={styles.value}>{currentData ? Math.round(currentData.speed || 0) : '--'} <Text style={styles.unit}>km/h</Text></Text>
-          </View>
-          
-          <TouchableOpacity style={styles.centerBtn} onPress={centerOnCar}>
-            <Ionicons name="locate" size={24} color="#00ffcc" />
-            <Text style={{color: '#00ffcc', fontSize: 10, marginTop: 2}}>FOCAR</Text>
+        {!salaAtiva ? (
+          <TouchableOpacity style={styles.createBtn} onPress={criarSala}>
+            <Text style={styles.btnText}>🌐 GERAR CÓDIGO DA MISSÃO</Text>
           </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>CÓDIGO ATIVO:</Text>
+            <Text style={styles.infoValue}>{salaAtiva}</Text>
+            <Text style={styles.veiculosCount}>🚗 {Object.keys(comboio).length} Veículos Conectados</Text>
+          </View>
+        )}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { width: '100%', height: '100%' },
-  markerRing: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(0, 255, 204, 0.3)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00ffcc' },
-  markerCore: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#00ffcc' },
-  topPanel: { position: 'absolute', top: 50, left: 20, right: 20 },
-  btnTop: { backgroundColor: '#1a1a1a', padding: 15, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#333' },
-  btnTopText: { color: '#fff', fontWeight: 'bold' },
-  roomCodeText: { color: '#e67e22', textAlign: 'center', marginTop: 10, fontWeight: '900', fontSize: 16, textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 },
-  glassPanel: { position: 'absolute', bottom: 40, left: 20, right: 20, backgroundColor: 'rgba(10, 10, 10, 0.85)', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#333' },
-  panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#333', paddingBottom: 10, marginBottom: 15 },
-  targetName: { color: '#888', fontSize: 12, fontWeight: 'bold', letterSpacing: 2 },
-  statusDot: { width: 10, height: 10, borderRadius: 5, shadowColor: '#00ffcc', shadowOpacity: 0.8, shadowRadius: 5 },
-  dataRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  label: { color: '#666', fontSize: 10, letterSpacing: 1 },
-  value: { color: '#fff', fontSize: 36, fontWeight: '900' },
-  unit: { fontSize: 14, color: '#00ffcc' },
-  centerBtn: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#1a1a1a', padding: 10, borderRadius: 12, borderWidth: 1, borderColor: '#333' }
+  loginContainer: { flex: 1, backgroundColor: '#0a0a0a', alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 28, fontWeight: '900', color: '#e67e22', letterSpacing: 2 },
+  subtitle: { color: '#888', marginBottom: 50, letterSpacing: 3 },
+  googleBtn: { flexDirection: 'row', backgroundColor: '#e67e22', padding: 15, borderRadius: 10, alignItems: 'center', width: '80%', justifyContent: 'center' },
+  googleText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  container: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0a0a0a' },
+  map: { ...StyleSheet.absoluteFillObject },
+  glassPanel: { position: 'absolute', bottom: 30, left: 20, right: 20, backgroundColor: 'rgba(10,10,10,0.95)', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#333', elevation: 10 },
+  adminHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderColor: '#333', paddingBottom: 10 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 15, borderWidth: 2, borderColor: '#e67e22' },
+  adminName: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  createBtn: { backgroundColor: '#e67e22', padding: 15, borderRadius: 10, alignItems: 'center' },
+  btnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  infoBox: { backgroundColor: '#111', padding: 15, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#222' },
+  infoLabel: { color: '#888', fontSize: 10, letterSpacing: 1 },
+  infoValue: { color: '#e67e22', fontSize: 32, fontWeight: '900', letterSpacing: 5 },
+  veiculosCount: { color: '#00ffcc', marginTop: 10, fontWeight: 'bold' },
+  carMarker: { alignItems: 'center' },
+  driverPic: { width: 40, height: 40, borderRadius: 20, borderWidth: 3, borderColor: '#fff' },
+  tag: { backgroundColor: '#e67e22', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginTop: -5, borderWidth: 1, borderColor: '#fff' },
+  tagText: { color: '#fff', fontSize: 10, fontWeight: 'bold' }
 });

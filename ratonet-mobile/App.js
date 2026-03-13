@@ -13,12 +13,12 @@ import { getAuth, GoogleAuthProvider, signInWithCredential, signOut } from "fire
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyChd-obj84ex3ICIR9-gXYaD73G4i2kClY",
-  authDomain: "ratonet-tracker.firebaseapp.com",
-  databaseURL: "https://ratonet-tracker-default-rtdb.firebaseio.com",
-  projectId: "ratonet-tracker",
-  storageBucket: "ratonet-tracker.firebasestorage.app",
-  appId: "1:675538092831:web:4af8d3e86ddb1b392ea62a"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -26,7 +26,7 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 GoogleSignin.configure({
-  webClientId: '675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com',
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 
 // Estilo de Mapa Noturno (Profissional)
