@@ -1,20 +1,62 @@
 {
+  "id": "/",
   "name": "RatOnet Tracker",
   "short_name": "RatOnet",
+  "description": "Sistema de localização tática e rastreamento GPS em tempo real.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#0f172a",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon-viajante.svg",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/favicon-admin.svg",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Rastreador do Viajante"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Centro de Comando"
+    }
+  ],
+  "categories": [
+    "navigation",
+    "travel"
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir Radar",
+      "short_name": "Radar",
+      "description": "Inicia a tela de telemetria",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

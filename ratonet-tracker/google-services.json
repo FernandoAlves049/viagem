@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "675538092831",
+    "firebase_url": "https://ratonet-tracker-default-rtdb.firebaseio.com",
+    "project_id": "ratonet-tracker",
+    "storage_bucket": "ratonet-tracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675538092831:android:95641f9b7c3f3ca52ea62a",
+        "android_client_info": {
+          "package_name": "com.souza.ratonet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675538092831-vk853tsk35a6totfj970jhr89cp28fca.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.souza.ratonet",
+            "certificate_hash": "782f59db68ea195f8cce39f376ade63aa16301de"
+          }
+        },
+        {
+          "client_id": "675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfXsmSyWxZssTI7ImWGEPIXiDorXcjs0w"
+        },
+        {
+          "current_key": "AIzaSyDLBlwZa9ErB-GwDUHB7obQLdBeDH16q_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675538092831:android:64580aa04e1d941e2ea62a",
+        "android_client_info": {
+          "package_name": "com.souza.ratonettracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfXsmSyWxZssTI7ImWGEPIXiDorXcjs0w"
+        },
+        {
+          "current_key": "AIzaSyDLBlwZa9ErB-GwDUHB7obQLdBeDH16q_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
