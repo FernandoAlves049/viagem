@@ -55,6 +55,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "675538092831-fptbbv5sevtgeff41asnqn31nlo74ub6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.souza.ratonettracker",
+            "certificate_hash": "527aaf82e4fc34e75d86d942ed086fb54e11c531"
+          }
+        },
+        {
           "client_id": "675538092831-cei7389fk88ceeho7i2dh7ce3383akc1.apps.googleusercontent.com",
           "client_type": 3
         }
