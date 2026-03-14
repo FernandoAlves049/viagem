@@ -22,14 +22,16 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.souza.ratonettracker",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBrmqZSWYdYM1T4cAkN1Brs07Qija4Fwhk"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "@react-native-google-signin/google-signin"
-    ],
     "extra": {
       "eas": {
         "projectId": "28f9d986-c385-478f-afa9-b8f35d5e6eef"
